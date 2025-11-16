@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 import 'register_page.dart';
+import 'home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -41,8 +42,11 @@ class _LoginPageState extends State<LoginPage> {
         const SnackBar(content: Text('Login realizado com sucesso!')),
       );
 
-      // Depois vamos trocar isto por navegação para a tela inicial
-      // (veículos/abastecimentos).
+      // Vai para a HomePage e remove a tela de login da pilha
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
     } on FirebaseAuthException catch (e) {
       String mensagem = 'Erro ao fazer login';
 

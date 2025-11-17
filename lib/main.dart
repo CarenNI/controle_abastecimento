@@ -15,13 +15,43 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Controle de Abastecimento',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+    const seed = Color(0xFF597A9A); // azul escuro da paleta
+    const background = Color(0xFFF7F6EF); // fundo claro creme
+
+    final theme = ThemeData(
+      useMaterial3: true,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: seed,
+        background: background,
+        surface: background,
       ),
+      scaffoldBackgroundColor: background,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: seed,
+        foregroundColor: Colors.white,
+        centerTitle: true,
+        elevation: 2,
+      ),
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          minimumSize: const Size.fromHeight(48), // botão mais alto
+          textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+        ),
+      ),
+      inputDecorationTheme: const InputDecorationTheme(
+        border: OutlineInputBorder(),
+      ),
+    );
+
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Controle de Abastecimento',
+      theme: theme,
+      darkTheme: theme, //  mesmo tema no dark
+      themeMode: ThemeMode.light, //  FORÇA SEMPRE TEMA CLARO
       home: const LoginPage(),
     );
   }

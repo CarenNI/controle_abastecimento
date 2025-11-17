@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'register_page.dart';
 import 'home_page.dart';
@@ -12,140 +13,105 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  final _senhaController = TextEditingController();
+  final emailController = TextEditingController();
+  final senhaController = TextEditingController();
+  bool carregando = false;
 
-  bool _carregando = false;
-
-  @override
-  void dispose() {
-    _emailController.dispose();
-    _senhaController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fazerLogin() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() => _carregando = true);
-
+  Future<void> fazerLogin() async {
     try {
+      setState(() => carregando = true);
+
       await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _senhaController.text.trim(),
+        email: emailController.text,
+        password: senhaController.text,
       );
 
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Login realizado com sucesso!')),
-      );
-
-      // Vai para a HomePage e remove a tela de login da pilha
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const HomePage()),
+        MaterialPageRoute(builder: (_) => const HomePage()),
       );
-    } on FirebaseAuthException catch (e) {
-      String mensagem = 'Erro ao fazer login';
-
-      if (e.code == 'user-not-found') {
-        mensagem = 'Usuário não encontrado';
-      } else if (e.code == 'wrong-password') {
-        mensagem = 'Senha incorreta';
-      }
-
+    } catch (e) {
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text(mensagem)));
-    } catch (_) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Erro inesperado ao fazer login')),
-      );
+      ).showSnackBar(SnackBar(content: Text("Erro ao fazer login: $e")));
     } finally {
-      if (mounted) {
-        setState(() => _carregando = false);
-      }
+      setState(() => carregando = false);
     }
-  }
-
-  void _irParaCadastro() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const RegisterPage()),
-    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              TextFormField(
-                controller: _emailController,
-                decoration: const InputDecoration(
-                  labelText: 'E-mail',
-                  border: OutlineInputBorder(),
-                ),
-                keyboardType: TextInputType.emailAddress,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Informe o e-mail';
-                  }
-                  if (!value.contains('@')) {
-                    return 'E-mail inválido';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _senhaController,
-                decoration: const InputDecoration(
-                  labelText: 'Senha',
-                  border: OutlineInputBorder(),
-                ),
-                obscureText: true,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Informe a senha';
-                  }
-                  if (value.length < 6) {
-                    return 'A senha deve ter pelo menos 6 caracteres';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _carregando ? null : _fazerLogin,
-                  child: _carregando
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Entrar'),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextButton(
-                onPressed: _irParaCadastro,
-                child: const Text('Criar uma conta'),
-              ),
-            ],
+    return Stack(
+      children: [
+        /// 🔵 FUNDO DO FUSCA
+        Positioned.fill(
+          child: Opacity(
+            opacity: 0.06,
+            child: SvgPicture.asset(
+              'assets/images/fusca.svg',
+              fit: BoxFit.cover,
+            ),
           ),
         ),
-      ),
+
+        /// 🔵 CONTEÚDO DA TELA
+        Scaffold(
+          backgroundColor: Colors.transparent,
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text(
+                    "Login",
+                    style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 32),
+
+                  TextField(
+                    controller: emailController,
+                    decoration: const InputDecoration(labelText: "E-mail"),
+                  ),
+                  const SizedBox(height: 16),
+
+                  TextField(
+                    controller: senhaController,
+                    decoration: const InputDecoration(labelText: "Senha"),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 32),
+
+                  SizedBox(
+                    width: double.infinity, // botão ocupando a largura toda
+                    child: ElevatedButton(
+                      onPressed: carregando ? null : fazerLogin,
+                      child: carregando
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : const Text("Entrar"),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
+                      );
+                    },
+                    child: const Text("Criar uma conta"),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
